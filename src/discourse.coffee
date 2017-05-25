@@ -4,6 +4,7 @@ catch
   prequire = require('parent-require')
   {Robot,Adapter,TextMessage,User} = prequire 'hubot'
 
+os = require 'os'
 https = require 'https'
 moment = require 'moment';
 {EventEmitter} = require 'events'
@@ -15,10 +16,18 @@ class Discourse extends Adapter
     @robot.logger.info "Constructor"
 
   send: (envelope, strings...) ->
-    @robot.logger.info "Send", envelope, strings
+    reply_envelope =
+      topic_id: envelope.room
+      post_number: envelope.message.id
+      message: strings.join(os.EOL)
+    @robot.logger.info "Send", reply_envelope
 
   reply: (envelope, strings...) ->
-    @robot.logger.info "Reply", envelope, strings
+    reply_envelope =
+      topic_id: envelope.room
+      post_number: envelope.message.id
+      message: strings.join(os.EOL)
+    @robot.logger.info "Reply", reply_envelope
 
   run: ->
     @robot.logger.info "Run"
