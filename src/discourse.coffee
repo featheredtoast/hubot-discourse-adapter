@@ -64,7 +64,7 @@ class DiscoursePoller extends EventEmitter
     request.get self.server + "/notifications.json?api_key=" + self.key + "&username=" + self.username + "&recent=true&silent=true&limit=20",
     {json: true}, (err, response, data) ->
       notifications = data.notifications.filter (notification) ->
-        moment(notification.created_at).isAfter(moment().subtract(10, "days")) &&
+        moment(notification.created_at).isAfter(moment().subtract(10, "seconds")) &&
         #notification types enum https://github.com/discourse/discourse/blob/master/app/models/notification.rb
         [1, 2, 6, 15].indexOf(notification.notification_type) >= 0
         #self.robot.logger.info "filtered notifications: ", notifications
