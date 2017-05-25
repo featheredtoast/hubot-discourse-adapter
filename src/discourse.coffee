@@ -5,7 +5,9 @@ catch
   {Robot,Adapter,TextMessage,User} = prequire 'hubot'
 
 os = require 'os'
+url = require 'url'
 https = require 'https'
+request = require 'request'
 moment = require 'moment';
 {EventEmitter} = require 'events'
 
@@ -91,9 +93,8 @@ class DiscoursePoller extends EventEmitter
         self.emit "message", data.id, data.topic_id, data.post_number, data.username, data.raw
 
   reply: ({message, topic_id, reply_to_post_number}) ->
-    https.request @server "/posts", {
-      raw: message
-      topic_id: topic_id
-      reply_to_post_number: reply_to_post_number
-      auto_track: false
-    }
+    self = @
+    target = @server + "/posts.json"
+    request.post target, {form: {api_key: @key, topic_id: topic_id, reply_to_post_number: reply_to_post_number, raw: message, auto_track: false}},
+      (err, response, body) ->
+            self.robot.logger.info "response: ", err, response, body
