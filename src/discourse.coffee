@@ -26,7 +26,7 @@ class Discourse extends Adapter
     reply_envelope =
       topic_id: envelope.room
       post_number: envelope.message.id
-      message: strings.join(os.EOL)
+      message: "@" + envelope.user.id + " " + strings.join(os.EOL)
     @robot.logger.info "Reply", reply_envelope
 
   run: ->
@@ -43,6 +43,9 @@ class Discourse extends Adapter
         user = new User username, name: username, room: topic_id
         message = new TextMessage user, raw, post_number
         @robot.receive message
+    user = new User 'sample_user', name: 'Sample User'
+    message = new TextMessage user, '@hubot-test open the pod bay doors', 'MSG-001'
+    @robot.receive message
     @bot = bot
 
 
