@@ -6,7 +6,6 @@ catch
 
 os = require 'os'
 url = require 'url'
-https = require 'https'
 request = require 'request'
 moment = require 'moment';
 {EventEmitter} = require 'events'
@@ -22,8 +21,8 @@ class Discourse extends Adapter
       topic_id: envelope.room
       reply_to_post_number: envelope.message.id
       message: strings.join(os.EOL)
-    @bot.reply reply_envelope
-    #@robot.logger.info "Send", reply_envelope
+    #@bot.reply reply_envelope
+    @robot.logger.info "Send", reply_envelope
 
   reply: (envelope, strings...) ->
     strings[0] = "@" + envelope.user.id + " " + strings[0]
@@ -62,38 +61,28 @@ class DiscoursePoller extends EventEmitter
 
   listen: ->
     self = @
-    https.get self.server + "/notifications.json?api_key=" + self.key + "&username=" + self.username + "&recent=true&silent=true&limit=20", (res) ->
-      res.setEncoding("utf8")
-      data = ''
-      res.on 'data', (chunk) ->
-        data += chunk.toString()
-      res.on 'end', () ->
-        data = JSON.parse(data)
-        notifications = data.notifications.filter (notification) ->
-          moment(notification.created_at).isAfter(moment().subtract(10, "days")) &&
-          #notification types enum https://github.com/discourse/discourse/blob/master/app/models/notification.rb
-          [1, 2, 6, 15].indexOf(notification.notification_type) >= 0
+    request.get self.server + "/notifications.json?api_key=" + self.key + "&username=" + self.username + "&recent=true&silent=true&limit=20",
+    {json: true}, (err, response, data) ->
+      notifications = data.notifications.filter (notification) ->
+        moment(notification.created_at).isAfter(moment().subtract(10, "days")) &&
+        #notification types enum https://github.com/discourse/discourse/blob/master/app/models/notification.rb
+        [1, 2, 6, 15].indexOf(notification.notification_type) >= 0
         #self.robot.logger.info "filtered notifications: ", notifications
-        for notification in notifications
-          self.getPost notification
-        setTimeout ->
-          self.listen()
-        , 10000
+      for notification in notifications
+        self.getPost notification
+      setTimeout ->
+        self.listen()
+      , 10000
 
   getPost: (notification) ->
     self = @
-    https.get @server + "/posts/" + notification.data.original_post_id + ".json?api_key=" + @key, (res) ->
-      res.setEncoding("utf8")
-      data = ''
-      res.on 'data', (chunk) ->
-        data += chunk.toString()
-      res.on 'end', () ->
-        data = JSON.parse(data)
-        #self.robot.logger.info "post data: ", data
-        self.emit "message", data.id, data.topic_id, data.post_number, data.username, data.raw
+    request.get @server + "/posts/" + notification.data.original_post_id + ".json?api_key=" + @key,
+    {json: true}, (err, response, data) ->
+      #self.robot.logger.info "post data: ", data
+      self.emit "message", data.id, data.topic_id, data.post_number, data.username, data.raw
 
   reply: ({message, topic_id, reply_to_post_number}) ->
     self = @
     target = @server + "/posts.json"
-    request.post target, {form: {api_key: @key, topic_id: topic_id, reply_to_post_number: reply_to_post_number, raw: message, auto_track: false}},
+    request.post target, {form: {api_key: @key, topic_id: topic_id, reply_to_post_number: reply_to_post_number, raw: message, auto_track: false}, json: true},
       (err, response, body) ->
