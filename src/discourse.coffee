@@ -43,9 +43,6 @@ class Discourse extends Adapter
         user = new User username, name: username, room: topic_id
         message = new TextMessage user, raw, post_number
         @robot.receive message
-    user = new User 'sample_user', name: 'Sample User'
-    message = new TextMessage user, '@hubot-test open the pod bay doors', 'MSG-001'
-    @robot.receive message
     @bot = bot
 
 
