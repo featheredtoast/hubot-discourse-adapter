@@ -23,11 +23,8 @@ class Discourse extends Adapter
     @robot.logger.info "Send", reply_envelope
 
   reply: (envelope, strings...) ->
-    reply_envelope =
-      topic_id: envelope.room
-      post_number: envelope.message.id
-      message: "@" + envelope.user.id + " " + strings.join(os.EOL)
-    @robot.logger.info "Reply", reply_envelope
+    strings[0] = "@" + envelope.user.id + " " + strings[0]
+    @send envelope, strings
 
   run: ->
     @robot.logger.info "Run"
