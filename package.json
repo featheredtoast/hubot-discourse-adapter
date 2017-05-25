@@ -1,21 +1,22 @@
 {
-    "name": "hubot-discourse",
-    "version": "1.0.0",
-    "description": "A Discorse connector for Hubot",
-    "main": "src/discourse.coffee",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "author": "",
-    "license": "ISC",
-    "dependencies": {
-        "parent-require": "^1.0.0",
-        "moment": "2.18.1"
-    },
-    "peerDependencies": {
-        "hubot": ">=2.0"
-    },
-    "devDependencies": {
-        "coffee-script": ">=1.2.0"
-    }
+  "name": "hubot-discourse",
+  "version": "1.0.0",
+  "description": "A Discorse connector for Hubot",
+  "main": "src/discourse.coffee",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "moment": "2.18.1",
+    "parent-require": "^1.0.0",
+    "request": "^2.81.0"
+  },
+  "peerDependencies": {
+    "hubot": ">=2.0"
+  },
+  "devDependencies": {
+    "coffee-script": ">=1.2.0"
+  }
 }
