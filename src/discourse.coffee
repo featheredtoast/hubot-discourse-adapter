@@ -7,7 +7,6 @@ catch
 os = require 'os'
 url = require 'url'
 request = require 'request'
-moment = require 'moment';
 {EventEmitter} = require 'events'
 
 class Discourse extends Adapter
@@ -61,15 +60,20 @@ class DiscoursePoller extends EventEmitter
 
   listen: ->
     self = @
-    request.get self.server + "/notifications.json?api_key=" + self.key + "&username=" + self.username + "&recent=true&silent=true&limit=20",
+    request.get self.server + "/notifications.json?api_key=" + self.key,
     {json: true}, (err, response, data) ->
+      self.robot.logger.info data
       notifications = data.notifications.filter (notification) ->
-        moment(notification.created_at).isAfter(moment().subtract(10, "seconds")) &&
+        notification.read == false &&
         #notification types enum https://github.com/discourse/discourse/blob/master/app/models/notification.rb
         [1, 2, 6, 15].indexOf(notification.notification_type) >= 0
-        #self.robot.logger.info "filtered notifications: ", notifications
+      self.robot.logger.info "filtered notifications: ", notifications
+      markRead = false
       for notification in notifications
         self.getPost notification
+        markRead = true
+      if markRead
+        self.markNotificationsRead()
       setTimeout ->
         self.listen()
       , 10000
@@ -80,6 +84,12 @@ class DiscoursePoller extends EventEmitter
     {json: true}, (err, response, data) ->
       #self.robot.logger.info "post data: ", data
       self.emit "message", data.id, data.topic_id, data.post_number, data.username, data.raw
+
+  markNotificationsRead: () ->
+    self = @
+    request.put @server + "/notifications/read.json?api_key=" + @key,
+    {json: true}, (err, response, data) ->
+      self.robot.logger.info "post data mark read: ", data
 
   reply: ({message, topic_id, reply_to_post_number}) ->
     self = @
