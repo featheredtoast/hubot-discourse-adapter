@@ -33,6 +33,7 @@ class Discourse extends Adapter
       username: process.env.HUBOT_DISCOURSE_USERNAME
       key:   process.env.HUBOT_DISCOURSE_KEY
       server:   process.env.HUBOT_DISCOURSE_SERVER
+    @robot.name
     bot = new DiscoursePoller(options, @robot)
     bot.listen()
     @emit "connected"
@@ -62,7 +63,7 @@ class DiscoursePoller extends EventEmitter
     self = @
     request.get self.server + "/notifications.json?api_key=" + self.key,
     {json: true}, (err, response, data) ->
-      self.robot.logger.info data
+      #self.robot.logger.info data
       notifications = data.notifications.filter (notification) ->
         notification.read == false &&
         #notification types enum https://github.com/discourse/discourse/blob/master/app/models/notification.rb
@@ -89,7 +90,7 @@ class DiscoursePoller extends EventEmitter
     self = @
     request.put @server + "/notifications/read.json?api_key=" + @key,
     {json: true}, (err, response, data) ->
-      self.robot.logger.info "post data mark read: ", data
+      #self.robot.logger.info "post data mark read: ", data
 
   reply: ({message, topic_id, reply_to_post_number}) ->
     self = @
