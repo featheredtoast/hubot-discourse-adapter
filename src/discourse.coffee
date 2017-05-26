@@ -63,11 +63,10 @@ class DiscoursePoller extends EventEmitter
   listen: ->
     self = @
     @alertChannel @username, (channel) ->
-      self.robot.logger.info channel
       messageBus.bus.apiKey = self.key
       messageBus.bus.baseUrl = self.server + "/"
-      messageBus.bus.subscribe channel, (data) ->
-        self.robot.logger.info data
+      messageBus.bus.subscribe channel, (notification) ->
+        self.handleNotification notification
 
   handleNotification: (notification) ->
     self = @
@@ -106,12 +105,6 @@ class DiscoursePoller extends EventEmitter
         self.robot.logger.error "error when getting user: ", error
       else
         callback data.user
-
-  markNotificationsRead: () ->
-    self = @
-    request.put "#{@server}/notifications/read.json?api_key=#{@key}",
-    {json: true}, (err, response, data) ->
-      #self.robot.logger.info "post data mark read: ", data
 
   reply: ({message, topic_id, reply_to_post_number}) ->
     self = @
