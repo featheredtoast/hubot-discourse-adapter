@@ -61,6 +61,8 @@ class DiscoursePoller extends EventEmitter
 
   listen: ->
     self = @
+    @alertChannel @username, (channel) ->
+      self.robot.logger.info channel
     request.get "#{@server}/notifications.json?api_key=#{self.key}",
     {json: true}, (err, response, data) ->
       self.robot.logger.info data
@@ -90,6 +92,15 @@ class DiscoursePoller extends EventEmitter
         message = "#{self.robot.name} " + data.raw
       self.emit "message", data.id, data.topic_id, data.post_number, data.username, message
 
+  alertChannel: (username, callback) ->
+    self = @
+    if @userId
+      callback "/notification-alert/#{@userId}"
+    else
+      @getUser username, (user) ->
+        self.userId = user.id
+        self.alertChannel username, callback
+
   getPost: (notification, callback) ->
     self = @
     request.get "#{@server}/posts/by_number/#{notification.topic_id}/#{notification.post_number}.json?api_key=#{@key}",
@@ -98,6 +109,15 @@ class DiscoursePoller extends EventEmitter
         self.robot.logger.error "error when getting post: ", err
       else
         callback data
+
+  getUser: (username, callback) ->
+    self = @
+    request.get "#{@server}/users/#{username}.json?api_key=#{@key}",
+    {json: true}, (err, response, data) ->
+      if err
+        self.robot.logger.error "error when getting user: ", error
+      else
+        callback data.user
 
   markNotificationsRead: () ->
     self = @
