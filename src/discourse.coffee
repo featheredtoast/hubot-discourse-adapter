@@ -84,7 +84,11 @@ class DiscoursePoller extends EventEmitter
     request.get @server + "/posts/" + notification.data.original_post_id + ".json?api_key=" + @key,
     {json: true}, (err, response, data) ->
       #self.robot.logger.info "post data: ", data
-      self.emit "message", data.id, data.topic_id, data.post_number, data.username, data.raw
+      # pretend like private messages are like mentions
+      message = data.raw
+      if [6].indexOf(notification.notification_type) >= 0
+        message = "#{self.robot.name} " + data.raw
+      self.emit "message", data.id, data.topic_id, data.post_number, data.username, message
 
   markNotificationsRead: () ->
     self = @
