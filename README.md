@@ -11,9 +11,11 @@ To get up and running, the adapter requires a few hubot variables to be set:
 
 ## Getting started
 
-`npm install -g yo generator-hubot`
-`mkdir my-awesome-hubot && cd my-awesome-hubot`
-`yo hubot --adapter=discourse-adapter`
+```
+npm install -g yo generator-hubot
+mkdir my-awesome-hubot && cd my-awesome-hubot
+yo hubot --adapter=discourse-adapter
+```
 
 ## Limitations
 
