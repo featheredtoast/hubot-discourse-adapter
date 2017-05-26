@@ -20,7 +20,3 @@ yo hubot --adapter=discourse-adapter
 ## Limitations
 
 Currently there is no reliable way to notify Hubot on messages other than `@username`, or by setting watched topics/categories to "watched" manually.
-
-The notifications roll up so only the first notification per batch will be responded to. The poll is on a 10 second timer. There is no pagination in the polling so only the most recent 60 messages notifications will be responded to.
-
-The discourse adapter requires a user that can use the API -- the bot may need to be promoted to staff.
