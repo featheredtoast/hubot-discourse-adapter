@@ -21,10 +21,10 @@ class Discourse extends Adapter
       reply_to_post_number: envelope.message.id
       message: strings.join(os.EOL)
     @robot.logger.info "Send", reply_envelope
-    @bot.reply reply_envelope
+    #@bot.reply reply_envelope
 
   reply: (envelope, strings...) ->
-    strings[0] = "@" + envelope.user.id + " " + strings[0]
+    strings[0] = "@#{envelope.user.id} #{strings[0]}"
     @send envelope, strings
 
   run: ->
@@ -61,17 +61,17 @@ class DiscoursePoller extends EventEmitter
 
   listen: ->
     self = @
-    request.get self.server + "/notifications.json?api_key=" + self.key,
+    request.get "#{@server}/notifications.json?api_key=#{self.key}",
     {json: true}, (err, response, data) ->
-      #self.robot.logger.info data
+      self.robot.logger.info data
       notifications = data.notifications.filter (notification) ->
-        notification.read == false &&
+        #notification.read == false &&
         #notification types enum https://github.com/discourse/discourse/blob/master/app/models/notification.rb
         [1, 2, 6, 15].indexOf(notification.notification_type) >= 0
       self.robot.logger.info "filtered notifications: ", notifications
       markRead = false
       for notification in notifications
-        self.getPost notification
+        self.handleNotification notification
         markRead = true
       if markRead
         self.markNotificationsRead()
@@ -79,10 +79,10 @@ class DiscoursePoller extends EventEmitter
         self.listen()
       , 10000
 
-  getPost: (notification) ->
+  handleNotification: (notification) ->
     self = @
-    request.get @server + "/posts/" + notification.data.original_post_id + ".json?api_key=" + @key,
-    {json: true}, (err, response, data) ->
+    @robot.logger.info "got notification: ", notification
+    @getPost notification, (data) ->
       #self.robot.logger.info "post data: ", data
       # pretend like private messages are like mentions
       message = data.raw
@@ -90,14 +90,23 @@ class DiscoursePoller extends EventEmitter
         message = "#{self.robot.name} " + data.raw
       self.emit "message", data.id, data.topic_id, data.post_number, data.username, message
 
+  getPost: (notification, callback) ->
+    self = @
+    request.get "#{@server}/posts/by_number/#{notification.topic_id}/#{notification.post_number}.json?api_key=#{@key}",
+    {json: true}, (err, response, data) ->
+      if err
+        self.robot.logger.error "error when getting post: ", err
+      else
+        callback data
+
   markNotificationsRead: () ->
     self = @
-    request.put @server + "/notifications/read.json?api_key=" + @key,
+    request.put "#{@server}/notifications/read.json?api_key=#{@key}",
     {json: true}, (err, response, data) ->
       #self.robot.logger.info "post data mark read: ", data
 
   reply: ({message, topic_id, reply_to_post_number}) ->
     self = @
-    target = @server + "/posts.json"
+    target = "#{@server}/posts.json"
     request.post target, {form: {api_key: @key, topic_id: topic_id, reply_to_post_number: reply_to_post_number, raw: message, auto_track: false}, json: true},
       (err, response, body) ->
