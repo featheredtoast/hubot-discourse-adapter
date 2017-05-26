@@ -33,7 +33,7 @@ class Discourse extends Adapter
       username: process.env.HUBOT_DISCOURSE_USERNAME
       key:   process.env.HUBOT_DISCOURSE_KEY
       server:   process.env.HUBOT_DISCOURSE_SERVER
-    @robot.name
+    @robot.name = options.username
     bot = new DiscoursePoller(options, @robot)
     bot.listen()
     @emit "connected"
