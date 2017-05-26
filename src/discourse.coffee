@@ -4,6 +4,7 @@ catch
   prequire = require('parent-require')
   {Robot,Adapter,TextMessage,User} = prequire 'hubot'
 
+messageBus = require './message-bus.js'
 os = require 'os'
 url = require 'url'
 request = require 'request'
@@ -63,23 +64,10 @@ class DiscoursePoller extends EventEmitter
     self = @
     @alertChannel @username, (channel) ->
       self.robot.logger.info channel
-    request.get "#{@server}/notifications.json?api_key=#{self.key}",
-    {json: true}, (err, response, data) ->
-      self.robot.logger.info data
-      notifications = data.notifications.filter (notification) ->
-        #notification.read == false &&
-        #notification types enum https://github.com/discourse/discourse/blob/master/app/models/notification.rb
-        [1, 2, 6, 15].indexOf(notification.notification_type) >= 0
-      self.robot.logger.info "filtered notifications: ", notifications
-      markRead = false
-      for notification in notifications
-        self.handleNotification notification
-        markRead = true
-      if markRead
-        self.markNotificationsRead()
-      setTimeout ->
-        self.listen()
-      , 10000
+      messageBus.bus.apiKey = self.key
+      messageBus.bus.baseUrl = self.server + "/"
+      messageBus.bus.subscribe channel, (data) ->
+        self.robot.logger.info data
 
   handleNotification: (notification) ->
     self = @
