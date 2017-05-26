@@ -1,7 +1,8 @@
 {
   "name": "hubot-discourse-adapter",
-  "version": "1.0.0",
-  "description": "A Discorse connector for Hubot",
+  "version": "1.0.1",
+    "description": "A Discorse connector for Hubot",
+    "keywords": ["hubot", "adapter", "discourse"],
   "main": "src/discourse.coffee",
   "scripts": {
   },
