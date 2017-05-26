@@ -9,7 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "moment": "2.18.1",
     "parent-require": "^1.0.0",
     "request": "^2.81.0"
   },
