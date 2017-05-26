@@ -185,23 +185,29 @@ function initMessageBus(global, undefined) {
             me.longPoll = null;
         };
         var dataSoFar = "";
-        var req = request.post(me.baseUrl + "message-bus/" + me.clientId + "/poll?api_key=" + me.apiKey + (!longPoll ? "&dlp=t" : ""),
+        var position = 0;
+        var url = me.baseUrl + "message-bus/" + me.clientId + "/poll" + (!longPoll ? "?dlp=t" : "");
+        data['api_key'] = me.apiKey;
+        var req = request.post(url,
+                               {header: headers,
+                                form: data
+                               },
                                function(err, response, body) {
                                    if(err) {
                                    }
                                    else {
                                        onSuccess(body);
                                    }
-                                   console.log("done with a request...");
                                    onComplete();
                                })
-                .on('data', function(data) {
-                    var position = 0;
-                    dataSoFar += data;
-                    if(chunked) {
-                        console.log("message bus data: " + dataSoFar);
-                        position = handle_progress(JSON.stringify(data), 0);
-                    }
+                .on('response', function(res) {
+                    res.setEncoding('utf8');
+                    res.on('data', function(data) {
+                        dataSoFar += data;
+                        if(chunked) {
+                            position = handle_progress(dataSoFar, position);
+                        }
+                    });
                 });
         return req;
     };
