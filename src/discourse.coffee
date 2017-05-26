@@ -109,5 +109,5 @@ class DiscoursePoller extends EventEmitter
   reply: ({message, topic_id, reply_to_post_number}) ->
     self = @
     target = "#{@server}/posts.json"
-    request.post target, {form: {api_key: @key, topic_id: topic_id, reply_to_post_number: reply_to_post_number, raw: message, auto_track: false}, json: true},
+    request.post target, {form: {api_key: @key, topic_id: topic_id, reply_to_post_number: reply_to_post_number, raw: message, auto_track: true}, json: true},
       (err, response, body) ->
