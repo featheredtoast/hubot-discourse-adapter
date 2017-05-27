@@ -29,6 +29,7 @@ class Discourse extends Adapter
     @send envelope, strings
 
   run: ->
+    self = @
     @robot.logger.info "Run"
     options =
       username: process.env.HUBOT_DISCOURSE_USERNAME
@@ -40,9 +41,10 @@ class Discourse extends Adapter
     @emit "connected"
     bot.on "message",
       (post_id, topic_id, post_number, username, raw) ->
-        user = new User username, name: username, room: topic_id
-        message = new TextMessage user, raw, post_number
-        @robot.receive message
+        bot.getUser username, (user) ->
+          user.room = topic_id
+          message = new TextMessage user, raw, post_number
+          self.robot.receive message
     @bot = bot
 
 
@@ -104,7 +106,8 @@ class DiscoursePoller extends EventEmitter
       if err
         self.robot.logger.error "error when getting user: ", error
       else
-        callback data.user
+        user = self.robot.brain.userForId username, data.user
+        callback user
 
   reply: ({message, topic_id, reply_to_post_number}) ->
     self = @
