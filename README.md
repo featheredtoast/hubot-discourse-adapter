@@ -17,6 +17,10 @@ mkdir my-awesome-hubot && cd my-awesome-hubot
 yo hubot --adapter=discourse-adapter
 ```
 
-## Limitations
+## Discourse configuration
 
-Currently there is no reliable way to notify Hubot on messages other than `@username`, or by setting watched topics/categories to "watched" manually.
+By default, Discourse does not send users alert messages unless directly notified via `@username`, or by quoting.
+
+In order to receive messages without a direct reply, you may either set the bot account's watched topics/categories to "watched" manually, or allow for "opt-in notifications".
+
+For opt-in notifications, set the bot's user preferences, notifications and set `When I post in a topic, set that topic to` `Watching` After the first reply, Hubot will then listen for any post after its first reply.
