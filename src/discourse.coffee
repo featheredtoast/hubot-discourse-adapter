@@ -25,7 +25,7 @@ class Discourse extends Adapter
     @bot.reply reply_envelope
 
   reply: (envelope, strings...) ->
-    strings[0] = "@#{envelope.user.id} #{strings[0]}"
+    strings[0] = "@#{envelope.user.username} #{strings[0]}"
     @send envelope, strings
 
   run: ->
