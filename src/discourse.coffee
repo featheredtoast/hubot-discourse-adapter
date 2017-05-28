@@ -26,7 +26,8 @@ class Discourse extends Adapter
 
   reply: (envelope, strings...) ->
     strings[0] = "@#{envelope.user.username} #{strings[0]}"
-    @send envelope, strings
+    strings.unshift envelope
+    @send.apply @, strings
 
   run: ->
     self = @
