@@ -45,10 +45,19 @@ The Discourse adapter supports messaging rooms via `res.robot.messageRoom`. If g
 
 ```
   robot.hear /alert admins/i, (res) ->
-    res.robot.messageRoom "admins", "topic to give to the admins", "this is a topic I want to give to admins"
+    res.robot.messageRoom "admin1,admin2", "topic to give to two admins", "this is a post I want to give to admins"
 ```
 
 ```
   robot.hear /bump a post/i, (res) ->
     res.robot.messageRoom 123, "I am posting in another existing post"
 ```
+
+## Message info
+
+After "hearing" something, the returned Response object contains the raw message, with a few extensions.
+
+`res.message.title` - the topic title of the heard post
+`res.message.slug` - the URL of the heard post
+`res.message.pm` - a boolean to detect whether or not this message was sent as a PM.
+`res.envelope.user.username` - the username that sent the message to this bot.
