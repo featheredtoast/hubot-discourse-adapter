@@ -38,3 +38,17 @@ Set the res.envelope.pm to true. If the message is already a PM, the bot will re
     res.envelope.pm = true
     res.send "I will reply hello privately!"
 ```
+
+## Arbitrary room messaging
+
+The Discourse adapter supports messaging rooms via `res.robot.messageRoom`. If given a comma separated list of strings, this will be a new PM. If the first argument is a topic id, this will create a new post in the specified topic.
+
+```
+  robot.hear /alert admins/i, (res) ->
+    res.robot.messageRoom "admins", "topic to give to the admins", "this is a topic I want to give to admins"
+```
+
+```
+  robot.hear /bump a post/i, (res) ->
+    res.robot.messageRoom 123, "I am posting in another existing post"
+```

@@ -18,7 +18,14 @@ class Discourse extends Adapter
 
   send: (envelope, strings...) ->
     message = strings.join(os.EOL)
-    if envelope.pm && !envelope.message.pm
+    if typeof envelope.room is 'string'
+      pm_envelope =
+        message: message
+        title: strings[0]
+        usernames: envelope.room
+      @robot.logger.info "PM", pm_envelope
+      @bot.pm pm_envelope
+    else if envelope.pm && !envelope.message.pm
       pm_envelope =
         message: envelope.message.slug + os.EOL + message
         title: "About your post in #{envelope.message.title}"
