@@ -17,12 +17,27 @@ class Discourse extends Adapter
     @robot.logger.info "Constructor"
 
   send: (envelope, strings...) ->
-    reply_envelope =
-      topic_id: envelope.room
-      reply_to_post_number: envelope.message.id
-      message: strings.join(os.EOL)
-    @robot.logger.info "Send", reply_envelope
-    @bot.reply reply_envelope
+    message = strings.join(os.EOL)
+    if envelope.pm && !envelope.message.pm
+      pm_envelope =
+        message: envelope.message.slug + os.EOL + message
+        title: "About your post in #{envelope.message.title}"
+        usernames: envelope.user.username
+      @robot.logger.info "PM", pm_envelope
+      @bot.pm pm_envelope
+    else if typeof envelope.message.id is 'number' && typeof envelope.room is 'number'
+      reply_envelope =
+        topic_id: envelope.room
+        reply_to_post_number: envelope.message.id
+        message: message
+      @robot.logger.info "Reply", reply_envelope
+      @bot.reply reply_envelope
+    else if typeof envelope.room is 'number'
+      send_envelope =
+        topic_id: envelope.room
+        message: message
+      @robot.logger.info "Send", send_envelope
+      @bot.post send_envelope
 
   reply: (envelope, strings...) ->
     strings[0] = "@#{envelope.user.username} #{strings[0]}"
@@ -40,10 +55,13 @@ class Discourse extends Adapter
     bot.listen()
     @emit "connected"
     bot.on "message",
-      (post_id, topic_id, post_number, username, raw) ->
+      (post_id, topic_id, post_number, username, raw, pm, slug, title) ->
         bot.getUser username, (user) ->
           user.room = topic_id
           message = new TextMessage user, raw, post_number
+          message.pm = pm
+          message.title = title
+          message.slug = slug
           self.robot.receive message
     @bot = bot
 
@@ -77,9 +95,11 @@ class DiscoursePoller extends EventEmitter
       #self.robot.logger.info "post data: ", data
       # pretend like private messages are like mentions
       message = data.raw
+      pm = false
       if [6].indexOf(notification.notification_type) >= 0
         message = "#{self.robot.name} " + data.raw
-      self.emit "message", data.id, data.topic_id, data.post_number, data.username, message
+        pm = true
+      self.emit "message", data.id, data.topic_id, data.post_number, data.username, message, pm, self.server + notification.post_url, notification.topic_title
 
   alertChannel: (username, callback) ->
     self = @
@@ -112,5 +132,17 @@ class DiscoursePoller extends EventEmitter
   reply: ({message, topic_id, reply_to_post_number}) ->
     self = @
     target = "#{@server}/posts.json"
-    request.post target, {form: {api_key: @key, topic_id: topic_id, reply_to_post_number: reply_to_post_number, raw: message, auto_track: true}, json: true},
+    request.post target, {form: {api_key: @key, topic_id: topic_id, reply_to_post_number: reply_to_post_number, raw: message}, json: true},
+      (err, response, body) ->
+
+  post: ({message, topic_id}) ->
+    self = @
+    target = "#{@server}/posts.json"
+    request.post target, {form: {api_key: @key, topic_id: topic_id, raw: message}, json: true},
+      (err, response, body) ->
+
+  pm: ({message, title, usernames}) ->
+    self = @
+    target = "#{@server}/posts.json"
+    request.post target, {form: {api_key: @key, title: title, target_usernames: usernames, raw: message, archetype: "private_message"}, json: true},
       (err, response, body) ->
