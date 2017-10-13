@@ -55,8 +55,9 @@ The Discourse adapter supports messaging rooms via `res.robot.messageRoom`. If g
 
 ## Message info
 
-After "hearing" something, the returned Response object contains the raw message, with a few extensions.
+After "hearing" something, the returned Response object (`res`) contains the raw message, with a few extensions.
 
+`res.message.text` - the text of the message
 `res.message.title` - the topic title of the heard post
 `res.message.slug` - the URL of the heard post
 `res.message.pm` - a boolean to detect whether or not this message was sent as a PM.
