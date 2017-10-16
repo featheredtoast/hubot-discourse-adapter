@@ -131,7 +131,7 @@ class DiscoursePoller extends EventEmitter
     request.get "#{@server}/users/#{username}.json?api_key=#{@key}",
     {json: true}, (err, response, data) ->
       if err
-        self.robot.logger.error "error when getting user: ", error
+        self.robot.logger.error "error when getting user: ", err
       else
         user = self.robot.brain.userForId username, data.user
         callback user
