@@ -1,6 +1,6 @@
 {
   "name": "hubot-discourse-adapter",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "A Discorse connector for Hubot",
   "homepage": "https://github.com/featheredtoast/hubot-discourse-adapter",
   "keywords": [
@@ -8,7 +8,7 @@
     "adapter",
     "discourse"
   ],
-  "main": "src/discourse.coffee",
+  "main": "src/discourse.js",
   "scripts": {},
   "author": "",
   "license": "ISC",
@@ -18,8 +18,5 @@
   },
   "peerDependencies": {
     "hubot": ">=2.0"
-  },
-  "devDependencies": {
-    "coffee-script": ">=1.2.0"
   }
 }
