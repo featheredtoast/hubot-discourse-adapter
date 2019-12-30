@@ -58,7 +58,6 @@ class Discourse extends Adapter {
   }
 
   run() {
-    const self = this;
     this.robot.logger.info("Run");
     const options = {
       username: process.env.HUBOT_DISCOURSE_USERNAME,
@@ -71,13 +70,13 @@ class Discourse extends Adapter {
     this.connector.on(
       "message",
       (post_id, topic_id, post_number, username, raw, pm, slug, title) =>
-        this.connector.getUser(username, function(user) {
+        this.connector.getUser(username, user => {
           user.room = topic_id;
           const message = new TextMessage(user, raw, post_number);
           message.pm = pm;
           message.title = title;
           message.slug = slug;
-          self.robot.receive(message);
+          this.robot.receive(message);
         })
     );
     this.emit("connected");
@@ -103,29 +102,27 @@ class DiscoursePoller extends EventEmitter {
   }
 
   listen() {
-    const self = this;
-    this.alertChannel(this.username, function(channel) {
-      messageBus.bus.apiKey = self.key;
-      messageBus.bus.baseUrl = self.server + "/";
+    this.alertChannel(this.username, channel => {
+      messageBus.bus.apiKey = this.key;
+      messageBus.bus.baseUrl = this.server + "/";
       messageBus.bus.subscribe(channel, notification =>
-        self.handleNotification(notification)
+        this.handleNotification(notification)
       );
     });
   }
 
   handleNotification(notification) {
-    const self = this;
     this.robot.logger.info("got notification: ", notification);
-    this.getPost(notification, function(data) {
-      //self.robot.logger.info "post data: ", data
+    this.getPost(notification, data => {
+      //this.robot.logger.info "post data: ", data
       // pretend like private messages are like mentions
       let message = data.raw;
       let pm = false;
       if ([6].indexOf(notification.notification_type) >= 0) {
-        message = `${self.robot.name} ` + data.raw;
+        message = `${this.robot.name} ` + data.raw;
         pm = true;
       }
-      self.emit(
+      this.emit(
         "message",
         data.id,
         data.topic_id,
@@ -133,34 +130,32 @@ class DiscoursePoller extends EventEmitter {
         data.username,
         message,
         pm,
-        self.server + notification.post_url,
+        this.server + notification.post_url,
         notification.topic_title
       );
     });
   }
 
   alertChannel(username, callback) {
-    const self = this;
     if (this.userId) {
       callback(`/notification-alert/${this.userId}`);
     } else {
-      this.getUser(username, function(user) {
-        self.userId = user.id;
-        self.alertChannel(username, callback);
+      this.getUser(username, user => {
+        this.userId = user.id;
+        this.alertChannel(username, callback);
       });
     }
   }
 
   getPost(notification, callback) {
-    const self = this;
     request.get(
       `${this.server}/posts/by_number/${notification.topic_id}/${
         notification.post_number
       }.json?api_key=${this.key}`,
       { json: true },
-      function(err, response, data) {
+      (err, response, data) => {
         if (err) {
-          self.robot.logger.error("error when getting post: ", err);
+          this.robot.logger.error("error when getting post: ", err);
         } else {
           callback(data);
         }
@@ -169,15 +164,14 @@ class DiscoursePoller extends EventEmitter {
   }
 
   getUser(username, callback) {
-    const self = this;
     request.get(
       `${this.server}/users/${username}.json?api_key=${this.key}`,
       { json: true },
-      function(err, response, data) {
+      (err, response, data) => {
         if (err) {
-          self.robot.logger.error("error when getting user: ", err);
+          this.robot.logger.error("error when getting user: ", err);
         } else {
-          const user = self.robot.brain.userForId(username, data.user);
+          const user = this.robot.brain.userForId(username, data.user);
           callback(user);
         }
       }
@@ -185,7 +179,6 @@ class DiscoursePoller extends EventEmitter {
   }
 
   reply({ message, topic_id, reply_to_post_number }) {
-    const self = this;
     const target = `${this.server}/posts.json`;
     request.post(
       target,
@@ -198,22 +191,20 @@ class DiscoursePoller extends EventEmitter {
         },
         json: true
       },
-      function(err, response, body) {}
+      (err, response, body) => {}
     );
   }
 
   post({ message, topic_id }) {
-    const self = this;
     const target = `${this.server}/posts.json`;
     request.post(
       target,
       { form: { api_key: this.key, topic_id, raw: message }, json: true },
-      function(err, response, body) {}
+      (err, response, body) => {}
     );
   }
 
   pm({ message, title, usernames }) {
-    const self = this;
     const target = `${this.server}/posts.json`;
     request.post(
       target,
@@ -227,7 +218,7 @@ class DiscoursePoller extends EventEmitter {
         },
         json: true
       },
-      function(err, response, body) {}
+      (err, response, body) => {}
     );
   }
 }
