@@ -71,7 +71,7 @@ class Discourse extends Adapter {
     this.connector.on(
       "message",
       (post_id, topic_id, post_number, username, raw, pm, slug, title) =>
-        connector.getUser(username, function(user) {
+        this.connector.getUser(username, function(user) {
           user.room = topic_id;
           const message = new TextMessage(user, raw, post_number);
           message.pm = pm;
