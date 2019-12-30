@@ -102,11 +102,7 @@ class DiscoursePoller extends EventEmitter {
   constructor(options, robot) {
     super(options, robot);
     this.robot = robot;
-    if (
-      options.username == null ||
-      options.key == null ||
-      options.server == null
-    ) {
+    if (!options.username || !options.key || !options.server) {
       this.robot.logger.error(
         "Not enough parameters provided. I need a username, key, and server"
       );
