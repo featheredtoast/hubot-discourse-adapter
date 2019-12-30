@@ -1,6 +1,6 @@
 {
   "name": "hubot-discourse-adapter",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "A Discorse connector for Hubot",
   "homepage": "https://github.com/featheredtoast/hubot-discourse-adapter",
   "keywords": [
