@@ -1,10 +1,4 @@
-let Adapter, Robot, TextMessage, User;
-try {
-  ({ Robot, Adapter, TextMessage, User } = require("hubot"));
-} catch (error) {
-  const prequire = require("parent-require");
-  ({ Robot, Adapter, TextMessage, User } = prequire("hubot"));
-}
+const { Adapter, TextMessage } = require("hubot/es2015");
 
 const messageBus = require("./message-bus.js");
 const os = require("os");
@@ -28,7 +22,7 @@ class Discourse extends Adapter {
         usernames: envelope.room
       };
       this.robot.logger.info("PM", pm_envelope);
-      this.bot.pm(pm_envelope);
+      this.connector.pm(pm_envelope);
     } else if (envelope.pm && !envelope.message.pm) {
       pm_envelope = {
         message: envelope.message.slug + os.EOL + message,
@@ -36,7 +30,7 @@ class Discourse extends Adapter {
         usernames: envelope.user.username
       };
       this.robot.logger.info("PM", pm_envelope);
-      this.bot.pm(pm_envelope);
+      this.connector.pm(pm_envelope);
     } else if (
       typeof envelope.message.id === "number" &&
       typeof envelope.room === "number"
@@ -47,14 +41,14 @@ class Discourse extends Adapter {
         message
       };
       this.robot.logger.info("Reply", reply_envelope);
-      this.bot.reply(reply_envelope);
+      this.connector.reply(reply_envelope);
     } else if (typeof envelope.room === "number") {
       const send_envelope = {
         topic_id: envelope.room,
         message
       };
       this.robot.logger.info("Send", send_envelope);
-      this.bot.post(send_envelope);
+      this.connector.post(send_envelope);
     }
   }
 
@@ -72,10 +66,9 @@ class Discourse extends Adapter {
       server: process.env.HUBOT_DISCOURSE_SERVER
     };
     this.robot.name = options.username;
-    const bot = new DiscoursePoller(options, this.robot);
-    bot.listen();
-    this.emit("connected");
-    bot.on(
+    this.connector = new DiscoursePoller(options, this.robot);
+    this.connector.listen();
+    this.connector.on(
       "message",
       (post_id, topic_id, post_number, username, raw, pm, slug, title) =>
         bot.getUser(username, function(user) {
@@ -87,7 +80,7 @@ class Discourse extends Adapter {
           self.robot.receive(message);
         })
     );
-    this.bot = bot;
+    this.emit("connected");
   }
 }
 
