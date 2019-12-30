@@ -1,8 +1,3 @@
-/*
- * decaffeinate suggestions:
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 let Adapter, Robot, TextMessage, User;
 try {
   ({ Robot, Adapter, TextMessage, User } = require("hubot"));
