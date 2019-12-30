@@ -95,7 +95,7 @@ exports.use = robot => new Discourse(robot);
 
 class DiscoursePoller extends EventEmitter {
   constructor(options, robot) {
-    super(options, robot);
+    super(...arguments);
     this.robot = robot;
     if (!options.username || !options.key || !options.server) {
       this.robot.logger.error(
