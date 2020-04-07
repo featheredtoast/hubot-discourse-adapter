@@ -104,6 +104,7 @@ class DiscoursePoller extends EventEmitter {
   listen() {
     this.alertChannel(this.username, channel => {
       messageBus.bus.apiKey = this.key;
+      messageBus.bus.apiUsername = this.robot.name;
       messageBus.bus.baseUrl = this.server + "/";
       messageBus.bus.subscribe(channel, notification =>
         this.handleNotification(notification)
@@ -149,10 +150,14 @@ class DiscoursePoller extends EventEmitter {
 
   getPost(notification, callback) {
     request.get(
-      `${this.server}/posts/by_number/${notification.topic_id}/${
-        notification.post_number
-      }.json?api_key=${this.key}`,
-      { json: true },
+      `${this.server}/posts/by_number/${notification.topic_id}/${notification.post_number}.json`,
+      {
+        headers: {
+          "Api-Key": this.key,
+          "Api-Username": this.robot.name
+        },
+        json: true
+      },
       (err, response, data) => {
         if (err) {
           this.robot.logger.error("error when getting post: ", err);
@@ -165,8 +170,14 @@ class DiscoursePoller extends EventEmitter {
 
   getUser(username, callback) {
     request.get(
-      `${this.server}/users/${username}.json?api_key=${this.key}`,
-      { json: true },
+      `${this.server}/users/${username}.json`,
+      {
+        headers: {
+          "Api-Key": this.key,
+          "Api-Username": this.robot.name
+        },
+        json: true
+      },
       (err, response, data) => {
         if (err) {
           this.robot.logger.error("error when getting user: ", err);
@@ -183,8 +194,11 @@ class DiscoursePoller extends EventEmitter {
     request.post(
       target,
       {
+        headers: {
+          "Api-Key": this.key,
+          "Api-Username": this.robot.name
+        },
         form: {
-          api_key: this.key,
           topic_id,
           reply_to_post_number,
           raw: message
@@ -199,7 +213,14 @@ class DiscoursePoller extends EventEmitter {
     const target = `${this.server}/posts.json`;
     request.post(
       target,
-      { form: { api_key: this.key, topic_id, raw: message }, json: true },
+      {
+        headers: {
+          "Api-Key": this.key,
+          "Api-Username": this.robot.name
+        },
+        form: { topic_id, raw: message },
+        json: true
+      },
       (err, response, body) => {}
     );
   }
@@ -209,8 +230,11 @@ class DiscoursePoller extends EventEmitter {
     request.post(
       target,
       {
+        headers: {
+          "Api-Key": this.key,
+          "Api-Username": this.robot.name
+        },
         form: {
-          api_key: this.key,
           title,
           target_usernames: usernames,
           raw: message,
